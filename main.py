@@ -29,11 +29,11 @@ def display_table():
                 #print("------------------------")
             print("------------------------")
 
-def roll():
-    rolls = []
-    for i in range(5):
-        rolls.append(random.randint(1, 6))
-    return rolls
+def roll(kept_rolls):
+    for i in range(len(kept_rolls)):
+        if kept_rolls[i] is None:
+            kept_rolls[i] = random.randint(1, 6)
+    return kept_rolls
 
 def main():
     print("Welcome to Yahtzee")
@@ -45,9 +45,18 @@ def main():
     table = Table()
     for turn in range(1, 14):
         table.display()
-        for roll in range(1, 4):
+        kept_rolls = [None] * 5
+        for roll_num in range(1, 4):
             print(f"turn: {turn}")
-            print(f"roll: {roll}")
+            print(f"roll: {roll_num}")
+            rolls = roll(kept_rolls)
+            print(f"Your die results are: {rolls}")
+            if roll_num < 3:
+                keep_choice = input("Which numbers do you want to keep? (format is '01001' if you want to keep the second and fifth die): ")
+            for i in range(len(keep_choice)):
+                if keep_choice[i] == "0":
+                    kept_rolls[i] = None
+            
 
 if __name__ == "__main__":
     main()
