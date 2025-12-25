@@ -53,10 +53,10 @@ def main():
             print(f"Your die results are: {rolls}")
             if roll_num < 3:
                 keep_choice = input("Which numbers do you want to keep? (format is '01001' if you want to keep the second and fifth die): ")
-            for i in range(len(keep_choice)):
-                if keep_choice[i] == "0":
-                    kept_rolls[i] = None
-            
+                for i in range(len(keep_choice)):
+                    if keep_choice[i] == "0":
+                        kept_rolls[i] = None
+            keep_choice = input(f"What scoresheet choice do you")
 
 if __name__ == "__main__":
     main()

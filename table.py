@@ -16,18 +16,23 @@ class Table:
         }
 
     def display(self):
-        items = self.table.items()
-        print("------------------------")
-        for item in items:
-            filler_key = len("small_straight") - len(item[0])
+        items = list(self.table.items())
+        print("------------------------------")
+        for i in range(len(items)):
+            filler_key = len("small_straight") - len(items[i][0])
             filler_key_str_l = " " * (filler_key // 2)
             filler_key_str_r = " " * ((filler_key + 1) // 2)
 
-            value = str(item[1])
+            value = str(items[i][1])
             if value == "None":
                 value = ""
             filler_value = len("999") - len(value)
             filler_val_str_l = " " * (filler_value // 2)
             filler_val_str_r = " " * ((filler_value + 1) // 2)
-            print(f"| {filler_key_str_l}{item[0]}{filler_key_str_r} | {filler_val_str_l}{value}{filler_val_str_r} |")
-        print("------------------------")
+
+            if i < 9:
+                index_str_r = " "
+            else:
+                index_str_r = ""
+            print(f"|  {i + 1}{index_str_r} | {filler_key_str_l}{items[i][0]}{filler_key_str_r} | {filler_val_str_l}{value}{filler_val_str_r} |")
+        print("------------------------------")
