@@ -6,7 +6,7 @@ from table import Table
 
 
 YAHTZEE_CHOICES_PATH = "choices.json"
-TEST_ROLL_BOOL = True
+TEST_ROLL_BOOL = False
 TEST_ROLLS = []
 
 def display_table():

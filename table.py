@@ -123,7 +123,7 @@ class Table:
     
     def calculate_scores(self):
         score_arr = list(map(lambda x: x[1], self.table))
-        true_score_arr = list(map(lambda x: x - 100 if x >= 100 else x))
+        true_score_arr = list(map(lambda x: x - 100 if x >= 100 else x, score_arr))
         upper_score = sum(score_arr[0:6])
         true_upper_score = sum(true_score_arr[0:6])
         if true_upper_score >= 63:
