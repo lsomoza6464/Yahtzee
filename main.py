@@ -1,13 +1,14 @@
-import argparse
 import os
 import json
 import random
 from table import Table
+from calculate_choices import suggest_keep_die
 
 
 YAHTZEE_CHOICES_PATH = "choices.json"
 TEST_ROLL_BOOL = False
 TEST_ROLLS = []
+USER_COMMANDS = set(["suggest", "s"])
 
 def display_table():
     if os.path.exists(YAHTZEE_CHOICES_PATH):
@@ -31,13 +32,12 @@ def display_table():
                 #print("------------------------")
             print("------------------------")
 
-def roll(kept_rolls): # add boolean that if TEST_ROLL_BOOL is true, you can add your own rolls instead of random rolls
-    if TEST_ROLL_BOOL:
-        return [1, 1, 1, 1, 1]
-    for i in range(len(kept_rolls)):
-        if kept_rolls[i] is None:
-            kept_rolls[i] = random.randint(1, 6)
-    return kept_rolls
+def roll(prev_rolls, keep_mask):
+    new_rolls = prev_rolls[:]
+    for i in range(5):
+        if not keep_mask[i]:
+            new_rolls[i] = random.randint(1, 6)
+    return new_rolls
 
 def scoresheet_choice(options, table: Table, rolls):
     if options is not None:
@@ -68,29 +68,44 @@ def main():
     #table.calculate_score()
     for turn in range(1, 14):
         table.display()
-        kept_rolls = [None] * 5
+        rolls = [None] * 5
+        keep_mask = [False] * 5
         for roll_num in range(1, 4):
             print(f"turn: {turn}")
             print(f"roll: {roll_num}")
-            rolls = roll(kept_rolls)
+            rolls = roll(rolls, keep_mask)
             print(f"Your die results are: {rolls}")
             if roll_num < 3:
                 keep_choice = input("Which numbers do you want to keep? (ex: format is '01001' if you want to keep the second and fifth die): ")
-                while keep_choice != "" and len(keep_choice) != 5: #may need to add checks for specifically 0s and 1s
+                while keep_choice != "" and len(keep_choice) != 5 and keep_choice not in USER_COMMANDS: #may need to add checks for specifically 0s and 1s
                     keep_choice = input("That is not the correct format, the format should be made up of 0s and 1s and be 5 characters long (ex: format is '01001' if you want to keep the second and fifth die): ")
                 if keep_choice == "":
-                    kept_rolls = [None] * 5
+                    pass
+                elif keep_choice in USER_COMMANDS:
+                    if keep_choice == "suggest" or keep_choice == "s":
+                        print(f"I suggest that you keep: {suggest_keep_die(rolls, roll_num)}")
+                        keep_choice = input("Which numbers do you want to keep? (ex: format is '01001' if you want to keep the second and fifth die): ")
+                        # Process the new keep_choice after suggestion
+                        if keep_choice != "" and keep_choice not in USER_COMMANDS:
+                            for i in range(len(keep_choice)):
+                                if keep_choice[i] == "0":
+                                    keep_mask[i] = False
+                                else:
+                                    keep_mask[i] = True
                 else:
                     for i in range(len(keep_choice)):
                         if keep_choice[i] == "0":
-                            kept_rolls[i] = None
+                            keep_mask[i] = False
+                        else:
+                            keep_mask[i] = True
                 
-        if len(set(kept_rolls)) == 1 and table.table[11][1]:
+        if len(set(rolls)) == 1 and table.table[11][1]:
             print("You scored another Yahtzee!")
-            if table.table[rolls[0] - 1][1] is None:
+            die_value = rolls[0] if rolls[0] is not None else 1
+            if table.table[die_value - 1][1] is None:
                 #selection = rolls[0] - 1
                 #print(f"Your joker selection was {table.table[rolls[0] - 1][0]}")
-                options = table.table[rolls[0] - 1][0]
+                options = table.table[die_value - 1][0]
                 scoresheet_choice(options, table, rolls)
             elif table.table[6][1] is None or table.table[7][1] is None or table.table[8][1] is None:
                 options = []
