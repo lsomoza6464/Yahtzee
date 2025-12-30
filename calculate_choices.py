@@ -12,7 +12,9 @@ YAHTZEE_EV_PATH = "ev.json"
 YAHTZEE_PROBABILITIES_PATH = "probabilities.json"
 reroll_cache = {}
 UPPER_SECTION_OPTIONS = ["ones", "twos", "threes", "fours", "fives", "sixes"]
+LOWER_SECTION_OPTIONS = ["3_of_a_kind", "4_of_a_kind", "full_house", "small_straight", "large_straight", "yahtzee", "chance"]
 UPPER_SECTION_OPTIONS_SET = set(["ones", "twos", "threes", "fours", "fives", "sixes"])
+ALL_OPTIONS_SET = set(UPPER_SECTION_OPTIONS + LOWER_SECTION_OPTIONS)
 
 def display_table():
     if os.path.exists(YAHTZEE_CHOICES_PATH):
@@ -41,6 +43,52 @@ def roll():
     for i in range(5):
         rolls.append(random.randint(1, 6))
     return rolls
+
+def suggest_keep_die(rolls, roll_num):
+    roll_counts = [0] * 6
+    for r in rolls:
+        roll_counts[r - 1] += 1
+
+    rolls_left = 3 - roll_num
+    best_ev = -1
+    best_keep = None
+
+    for keep in all_sub_multisets(roll_counts):
+        m = 5 - sum(keep)
+        ev_keep = 0.0
+
+        for outcome, p in reroll_outcomes(m):
+            next_counts = tuple(keep[i] + outcome[i] for i in range(6))
+
+            best_cat_ev = 0.0
+            for category in ALL_OPTIONS_SET:
+                best_cat_ev = max(
+                    best_cat_ev,
+                    ev_category(next_counts, rolls_left - 1, category)
+                )
+
+            ev_keep += p * best_cat_ev
+
+        if ev_keep > best_ev:
+            best_ev = ev_keep
+            best_keep = keep
+
+    print(best_keep)
+
+    return keep_indices_from_counts(rolls, best_keep)
+
+
+def keep_indices_from_counts(rolls, keep_counts):
+    keep = []
+    needed = keep_counts.copy()
+
+    for i, r in enumerate(rolls):
+        idx = r - 1
+        if needed[idx] > 0:
+            keep.append(i)
+            needed[idx] -= 1
+
+    return keep
 
 def prob_distribution(roll_num, die):
     return None
@@ -71,7 +119,7 @@ def prob_category(roll_counts, rolls_left, category):
             #p_outcome = multinomial_prob(outcome, m)
             next_counts = keep + outcome
 
-            prob += p_outcome * prob_category(next_counts, rolls_left - 1)
+            prob += p_outcome * prob_category(next_counts, rolls_left - 1, category)
 
         best_prob = max(best_prob, prob)
     probs[count_str] = best_prob
@@ -118,9 +166,9 @@ def score_category(roll_counts, category):
     if category == "full_house":
         return 25 if 3 in set(roll_counts) and 2 in set(roll_counts) else 0
     if category == "small_straight":
-        return 30 if get_logest_streak(roll_counts) >= 4 else 0
+        return 30 if get_longest_streak(roll_counts) >= 4 else 0
     if category == "large_straight":
-        return 40 if get_logest_streak(roll_counts) == 5 else 0
+        return 40 if get_longest_streak(roll_counts) == 5 else 0
     if category == "chance" or (category == "3_of_a_kind" and max(roll_counts) >= 3) or (category == "4_of_a_kind" and max(roll_counts) >= 4):
         output = 0
         for i in range(len(roll_counts)):
@@ -154,7 +202,6 @@ def reroll_outcomes(m):
 
     outcome_counts = defaultdict(int)
 
-    # Enumerate all sequences (small: max 6^5 = 7776)
     for seq in product(range(6), repeat=m):
         counts = [0] * 6
         for face in seq:
@@ -170,7 +217,6 @@ def reroll_outcomes(m):
     reroll_cache[m] = result
     return result
 
-
 def lower_category_satisfied(roll_counts, category):
     if category == "yahtzee" and max(roll_counts) == 5:
         return True
@@ -181,14 +227,14 @@ def lower_category_satisfied(roll_counts, category):
     if category == "full_house" and 3 in set(roll_counts) and 2 in set(roll_counts):
         return True
     if category == "small_straight" or category == "large_straight":
-        longest_streak = get_logest_streak(roll_counts)
+        longest_streak = get_longest_streak(roll_counts)
         if (category == "small_straight" and longest_streak >= 4) or (category == "large_straight" and longest_streak == 5):
             return True
     if category == "chance":
         return True
     return False
     
-def get_logest_streak(roll_counts):
+def get_longest_streak(roll_counts):
     longest_streak = 0
     curr_streak = 0
     for count in roll_counts:
@@ -197,6 +243,7 @@ def get_logest_streak(roll_counts):
             longest_streak = max(longest_streak, curr_streak)
         else:
             curr_streak = 0
+    return longest_streak
 
 def multinomial_prob(outcome):
     m = sum(outcome)
