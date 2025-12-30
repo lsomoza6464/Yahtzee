@@ -53,6 +53,10 @@ def suggest_keep_die(rolls, roll_num):
     best_ev = -1
     best_keep = None
 
+    baseline_ev = {}
+    for category in ALL_OPTIONS_SET:
+        baseline_ev[category] = ev_category((0, 0, 0, 0, 0, 0), 2, category)
+
     for keep in all_sub_multisets(roll_counts):
         m = 5 - sum(keep)
         ev_keep = 0.0
@@ -64,7 +68,7 @@ def suggest_keep_die(rolls, roll_num):
             for category in ALL_OPTIONS_SET:
                 best_cat_ev = max(
                     best_cat_ev,
-                    ev_category(next_counts, rolls_left - 1, category)
+                    ev_category(next_counts, rolls_left - 1, category) - baseline_ev[category]
                 )
 
             ev_keep += p * best_cat_ev
@@ -72,8 +76,7 @@ def suggest_keep_die(rolls, roll_num):
         if ev_keep > best_ev:
             best_ev = ev_keep
             best_keep = keep
-
-    print(best_keep)
+    #print(best_keep)
 
     return keep_indices_from_counts(rolls, best_keep)
 

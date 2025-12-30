@@ -57,6 +57,16 @@ def scoresheet_choice(options, table: Table, rolls):
     table.add_selection(selection, rolls)
     
 
+def keep_str_from_indices(indices):
+    index_set = set(indices)
+    keep_str = ""
+    for i in range(5):
+        if i in index_set:
+            keep_str += "1"
+        else:
+            keep_str += "0"
+    return keep_str
+
 def main():
     print("Welcome to Yahtzee")
     print("After each roll, you will be provided with the current turn and roll.")
@@ -83,7 +93,9 @@ def main():
                     pass
                 elif keep_choice in USER_COMMANDS:
                     if keep_choice == "suggest" or keep_choice == "s":
-                        print(f"I suggest that you keep: {suggest_keep_die(rolls, roll_num)}")
+                        suggested_keep_indices = suggest_keep_die(rolls, roll_num)
+                        keep_indices_str = keep_str_from_indices(suggested_keep_indices)
+                        print(f"I suggest that you keep: {suggested_keep_indices} (input: {keep_indices_str})")
                         keep_choice = input("Which numbers do you want to keep? (ex: format is '01001' if you want to keep the second and fifth die): ")
                         # Process the new keep_choice after suggestion
                         if keep_choice != "" and keep_choice not in USER_COMMANDS:
