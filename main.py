@@ -93,7 +93,7 @@ def main():
                     pass
                 elif keep_choice in USER_COMMANDS:
                     if keep_choice == "suggest" or keep_choice == "s":
-                        suggested_keep_indices = suggest_keep_die(rolls, roll_num)
+                        suggested_keep_indices = suggest_keep_die(rolls, roll_num, table.options)
                         keep_indices_str = keep_str_from_indices(suggested_keep_indices)
                         print(f"I suggest that you keep: {suggested_keep_indices} (input: {keep_indices_str})")
                         keep_choice = input("Which numbers do you want to keep? (ex: format is '01001' if you want to keep the second and fifth die): ")

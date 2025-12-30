@@ -5,6 +5,7 @@ import random
 import math
 from itertools import product
 from collections import defaultdict
+import copy
 
 
 YAHTZEE_CHOICES_PATH = "choices.json"
@@ -44,7 +45,7 @@ def roll():
         rolls.append(random.randint(1, 6))
     return rolls
 
-def suggest_keep_die(rolls, roll_num):
+def suggest_keep_die(rolls, roll_num, remaining_options):
     roll_counts = [0] * 6
     for r in rolls:
         roll_counts[r - 1] += 1
@@ -65,7 +66,7 @@ def suggest_keep_die(rolls, roll_num):
             next_counts = tuple(keep[i] + outcome[i] for i in range(6))
 
             best_cat_ev = 0.0
-            for category in ALL_OPTIONS_SET:
+            for category in remaining_options:
                 best_cat_ev = max(
                     best_cat_ev,
                     ev_category(next_counts, rolls_left - 1, category) - baseline_ev[category]

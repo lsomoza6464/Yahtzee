@@ -1,3 +1,9 @@
+import copy
+
+UPPER_SECTION_OPTIONS = ["ones", "twos", "threes", "fours", "fives", "sixes"]
+LOWER_SECTION_OPTIONS = ["3_of_a_kind", "4_of_a_kind", "full_house", "small_straight", "large_straight", "yahtzee", "chance"]
+ALL_OPTIONS_SET = set(UPPER_SECTION_OPTIONS + LOWER_SECTION_OPTIONS)
+
 class Table:
     def __init__(self):
         self.dict = {
@@ -28,9 +34,30 @@ class Table:
             "small_straight": 9,
             "large_straight": 10,
             "yahtzee": 11,
-            "chance": 12
+            "chance": 12,
+            "3 of a kind": 6,
+            "4 of a kind": 7,
+            "full house": 8,
+            "small straight": 9,
+            "large straight": 10
+        }
+        self.reverse_mapping = {
+            0: "ones",
+            1: "twos",
+            2: "threes",
+            3: "fours",
+            4: "fives",
+            5: "sixes",
+            6: "3_of_a_kind",
+            7: "4_of_a_kind",
+            8: "full_house",
+            9: "small_straight",
+            10: "large_straight",
+            11: "yahtzee",
+            12: "chance"
         }
         self.table = [["ones", None], ["twos", None], ["threes", None], ["fours", None], ["fives", None], ["sixes",None], ["3_of_a_kind", None], ["4_of_a_kind", None], ["full_house", None], ["small_straight", None], ["large_straight", None], ["yahtzee", None], ["chance", None]]
+        self.options = copy.deepcopy(ALL_OPTIONS_SET)
 
     def display(self):
         #items = list(self.dict.items())
@@ -63,6 +90,7 @@ class Table:
             return ValueError("selection index not found")
         value = self.get_roll_value(index, rolls)
         self.table[index][1] = value
+        self.options.remove(self.reverse_mapping[index])
     
     def get_roll_value(self, index, rolls):
         value = self.multi_yahtzee(index, rolls) # start value at the 100 of multi-yahtzee and add from there
