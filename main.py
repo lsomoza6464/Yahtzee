@@ -2,7 +2,7 @@ import os
 import json
 import random
 from table import Table
-from calculate_choices import suggest_keep_die
+from calculate_choices import suggest_keep_die, suggest_keep_die_full, build_baseline_ev, suggest_category_choice
 
 
 YAHTZEE_CHOICES_PATH = "choices.json"
@@ -93,7 +93,9 @@ def main():
                     pass
                 elif keep_choice in USER_COMMANDS:
                     if keep_choice == "suggest" or keep_choice == "s":
-                        suggested_keep_indices = suggest_keep_die(rolls, roll_num, table.options)
+                        # Calculate current upper section sum
+                        current_upper_sum = sum(score for score in [table.table[i][1] for i in range(6)] if score is not None)
+                        suggested_keep_indices = suggest_keep_die_full(rolls, roll_num, table.options, upper_sum=current_upper_sum)
                         keep_indices_str = keep_str_from_indices(suggested_keep_indices)
                         print(f"I suggest that you keep: {suggested_keep_indices} (input: {keep_indices_str})")
                         keep_choice = input("Which numbers do you want to keep? (ex: format is '01001' if you want to keep the second and fifth die): ")
@@ -136,6 +138,13 @@ def main():
                             options.append(table.table[i][0])
                 scoresheet_choice(options, table, rolls)
         else:
+            # Calculate current upper sum for suggestion
+            current_upper_sum = sum(score for score in [table.table[i][1] for i in range(6)] if score is not None)
+
+            # Suggest best category
+            best_category, regret_value = suggest_category_choice(rolls, table.options, current_upper_sum)
+            print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
+
             scoresheet_choice(None, table, rolls)
                 #selection = input("What scoresheet choice do you want to use for this turn? (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
                 #while not table.add_selection(selection, kept_rolls):
