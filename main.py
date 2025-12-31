@@ -37,6 +37,7 @@ def roll(prev_rolls, keep_mask):
     for i in range(5):
         if not keep_mask[i]:
             new_rolls[i] = random.randint(1, 6)
+            #new_rolls[i] = 1
     return new_rolls
 
 def scoresheet_choice(options, table: Table, rolls):

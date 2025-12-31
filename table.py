@@ -90,7 +90,12 @@ class Table:
             return ValueError("selection index not found")
         value = self.get_roll_value(index, rolls)
         self.table[index][1] = value
-        self.options.remove(self.reverse_mapping[index])
+        #if self.reverse_mapping[index] == "yahtzee":
+        #    self.options.add("yahtzee2")
+        #if self.reverse_mapping[index] != "yahtzee2":
+        #    self.options.remove(self.reverse_mapping[index])
+        if self.reverse_mapping[index] != "yahtzee":
+            self.options.remove(self.reverse_mapping[index])
     
     def get_roll_value(self, index, rolls):
         value = self.multi_yahtzee(index, rolls) # start value at the 100 of multi-yahtzee and add from there
