@@ -133,8 +133,8 @@ def suggest_category_choice(rolls, remaining_options, upper_sum, yahtzee_found=F
     best_category = None
     best_value = -1e9
     new_remaining_options = copy.deepcopy(remaining_options)
-    if yahtzee_found:
-        remaining_options.remove("yahtzee")
+    if yahtzee_found and "yahtzee" in new_remaining_options:
+        new_remaining_options.remove("yahtzee")
 
     for category in new_remaining_options:
         actual_score = score_category(counts, category)
