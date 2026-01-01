@@ -116,7 +116,7 @@ def suggest_keep_die_full(
     save_cache(cache)
     return keep_indices_from_counts(rolls, best_keep)
 
-def suggest_category_choice(rolls, remaining_options, upper_sum):
+def suggest_category_choice(rolls, remaining_options, upper_sum, yahtzee_found=False):
     counts = [0] * 6
     for r in rolls:
         counts[r - 1] += 1
@@ -132,8 +132,11 @@ def suggest_category_choice(rolls, remaining_options, upper_sum):
 
     best_category = None
     best_value = -1e9
+    new_remaining_options = copy.deepcopy(remaining_options)
+    if yahtzee_found:
+        remaining_options.remove("yahtzee")
 
-    for category in remaining_options:
+    for category in new_remaining_options:
         actual_score = score_category(counts, category)
 
         if category in UPPER_SECTION_OPTIONS_SET:

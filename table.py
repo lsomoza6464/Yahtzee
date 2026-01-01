@@ -97,6 +97,11 @@ class Table:
         if self.reverse_mapping[index] != "yahtzee":
             self.options.remove(self.reverse_mapping[index])
     
+    def yahtzee_found(self):
+        if self.table[self.mapping["yahtzee"]][1] is not None:
+            return True
+        return False
+
     def get_roll_value(self, index, rolls):
         value = self.multi_yahtzee(index, rolls) # start value at the 100 of multi-yahtzee and add from there
         if not self.zero_score(index, rolls):

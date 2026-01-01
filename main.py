@@ -54,7 +54,7 @@ def scoresheet_choice(options, table: Table, rolls, current_upper_sum=0):
     while validity == "invalid" or validity == "taken" or (options is not None and table.table[validity][0] not in options):
         if validity == "invalid" and selection in USER_COMMANDS:
             if selection == "suggest" or selection == "s":
-                best_category, regret_value = suggest_category_choice(rolls, options, current_upper_sum)
+                best_category, regret_value = suggest_category_choice(rolls, options, current_upper_sum, yahtzee_found=table.yahtzee_found())
                 print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
             elif selection == "full_suggestion" or selection == "fs":
                 print(rank_category_choices(rolls, options, current_upper_sum))
