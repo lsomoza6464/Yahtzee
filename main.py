@@ -40,12 +40,17 @@ def roll(prev_rolls, keep_mask):
             #new_rolls[i] = 1
     return new_rolls
 
-def scoresheet_choice(options, table: Table, rolls):
+def scoresheet_choice(options, table: Table, rolls, current_upper_sum=0):
+
     if options is not None:
         print(f"Your scoresheet choice must be one of these options: {options}")
     selection = input("What scoresheet choice do you want to use for this turn? (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
+
     validity = table.check_selection(selection)
     while validity == "invalid" or validity == "taken" or (options is not None and table.table[validity][0] not in options):
+        if validity == "invalid" and selection in USER_COMMANDS:
+            best_category, regret_value = suggest_category_choice(rolls, table.options, current_upper_sum)
+            print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
         if validity == "invalid":
             selection = input("That was an invalid input, please enter a valid input (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
             validity = table.check_selection(selection)
@@ -142,11 +147,9 @@ def main():
             # Calculate current upper sum for suggestion
             current_upper_sum = sum(score for score in [table.table[i][1] for i in range(6)] if score is not None)
 
-            # Suggest best category
-            best_category, regret_value = suggest_category_choice(rolls, table.options, current_upper_sum)
-            print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
+            
 
-            scoresheet_choice(None, table, rolls)
+            scoresheet_choice(None, table, rolls, current_upper_sum)
                 #selection = input("What scoresheet choice do you want to use for this turn? (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
                 #while not table.add_selection(selection, kept_rolls):
                 #    selection = input("That was an invalid input, please enter a valid input (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")

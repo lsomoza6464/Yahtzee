@@ -120,7 +120,6 @@ def suggest_keep_die_full(
     return keep_indices_from_counts(rolls, best_keep)
 
 def suggest_category_choice(rolls, remaining_options, upper_sum):
-    """Suggests the best category to use for scoring based on current rolls."""
     counts = [0] * 6
     for r in rolls:
         counts[r - 1] += 1
