@@ -84,10 +84,7 @@ def main():
     print("After each roll, you will be provided with the current turn and roll.")
     print("If you ever need help or instructions on the application, write 'help'.")
     print("If you ever need rules for Yahtzee, you can visit this site: https://winning-moves.com/images/YAHTZEERULES_2022.pdf or write 'rules'.")
-    #print("If you want to display the current table, write 'table'")
-    #display_table()
     table = Table()
-    #table.calculate_score()
     for turn in range(1, 14):
         table.display()
         rolls = [None] * 5
@@ -105,13 +102,11 @@ def main():
                     pass
                 elif keep_choice in USER_COMMANDS:
                     if keep_choice == "suggest" or keep_choice == "s":
-                        # Calculate current upper section sum
                         current_upper_sum = sum(score for score in [table.table[i][1] for i in range(6)] if score is not None)
                         suggested_keep_indices = suggest_keep_die_full(rolls, roll_num, table.options, upper_sum=current_upper_sum)
                         keep_indices_str = keep_str_from_indices(suggested_keep_indices)
                         print(f"I suggest that you keep: {suggested_keep_indices} (input: {keep_indices_str})")
                         keep_choice = input("Which numbers do you want to keep? (ex: format is '01001' if you want to keep the second and fifth die): ")
-                        # Process the new keep_choice after suggestion
                         if keep_choice != "" and keep_choice not in USER_COMMANDS:
                             for i in range(len(keep_choice)):
                                 if keep_choice[i] == "0":
@@ -129,8 +124,6 @@ def main():
             print("You scored another Yahtzee!")
             die_value = rolls[0] if rolls[0] is not None else 1
             if table.table[die_value - 1][1] is None:
-                #selection = rolls[0] - 1
-                #print(f"Your joker selection was {table.table[rolls[0] - 1][0]}")
                 options = [table.table[die_value - 1][0]]
                 scoresheet_choice(options, table, rolls)
             elif table.table[6][1] is None or table.table[7][1] is None or table.table[8][1] is None:
@@ -142,7 +135,7 @@ def main():
             else:
                 options = []
                 for i in range(9, 13):
-                    if table.table[i][1] is None and i != 11: # skipping yahtzee
+                    if table.table[i][1] is None and i != 11:
                         options.append(table.table[i][0])
                 if not options:
                     for i in range(1, 7):
@@ -150,15 +143,8 @@ def main():
                             options.append(table.table[i][0])
                 scoresheet_choice(options, table, rolls)
         else:
-            # Calculate current upper sum for suggestion
             current_upper_sum = sum(score for score in [table.table[i][1] for i in range(6)] if score is not None)
-
-            
-
             scoresheet_choice(None, table, rolls, current_upper_sum)
-                #selection = input("What scoresheet choice do you want to use for this turn? (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
-                #while not table.add_selection(selection, kept_rolls):
-                #    selection = input("That was an invalid input, please enter a valid input (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
     print("You have finished your turns, here is your final scoresheet:")
     table.display()
     final_score, true_final_score = table.calculate_scores()
