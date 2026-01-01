@@ -147,8 +147,11 @@ def main():
             scoresheet_choice(None, table, rolls, current_upper_sum)
     print("You have finished your turns, here is your final scoresheet:")
     table.display()
-    final_score, true_final_score = table.calculate_scores()
-    print(f"\nYour final score was {final_score}")
+    final_score, true_final_score, upper_score = table.calculate_scores()
+    print() #extra space
+    if upper_score > 0:
+        print(f"You scored higher than 63 on your upper score, you received a bonus of 35 points!")
+    print(f"Your final score was {final_score}")
     print(f"Your true score (without including 100 bonus per extra yahtzee) was {true_final_score}")
 
 if __name__ == "__main__":

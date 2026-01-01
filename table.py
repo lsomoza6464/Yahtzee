@@ -169,4 +169,4 @@ class Table:
             true_upper_score += 35
         lower_score = sum(score_arr[6:len(score_arr)])
         true_lower_score = sum(true_score_arr[6:len(true_score_arr)])
-        return [upper_score + lower_score, true_upper_score + true_lower_score]
+        return [upper_score + lower_score, true_upper_score + true_lower_score, upper_score]
