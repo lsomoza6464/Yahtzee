@@ -9,6 +9,10 @@ YAHTZEE_CHOICES_PATH = "choices.json"
 TEST_ROLL_BOOL = False
 TEST_ROLLS = []
 USER_COMMANDS = set(["suggest", "s"])
+UPPER_SECTION_OPTIONS = ["ones", "twos", "threes", "fours", "fives", "sixes"]
+LOWER_SECTION_OPTIONS = ["3_of_a_kind", "4_of_a_kind", "full_house", "small_straight", "large_straight", "yahtzee", "chance"]
+UPPER_SECTION_OPTIONS_SET = set(["ones", "twos", "threes", "fours", "fives", "sixes"])
+ALL_OPTIONS_SET = set(UPPER_SECTION_OPTIONS + LOWER_SECTION_OPTIONS)
 
 def display_table():
     if os.path.exists(YAHTZEE_CHOICES_PATH):
@@ -36,20 +40,22 @@ def roll(prev_rolls, keep_mask):
     new_rolls = prev_rolls[:]
     for i in range(5):
         if not keep_mask[i]:
-            new_rolls[i] = random.randint(1, 6)
-            #new_rolls[i] = 1
+            #new_rolls[i] = random.randint(1, 6)
+            new_rolls[i] = 1
     return new_rolls
 
 def scoresheet_choice(options, table: Table, rolls, current_upper_sum=0):
 
     if options is not None:
         print(f"Your scoresheet choice must be one of these options: {options}")
+    else:
+        options = table.options
     selection = input("What scoresheet choice do you want to use for this turn? (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
 
     validity = table.check_selection(selection)
     while validity == "invalid" or validity == "taken" or (options is not None and table.table[validity][0] not in options):
         if validity == "invalid" and selection in USER_COMMANDS:
-            best_category, regret_value = suggest_category_choice(rolls, table.options, current_upper_sum)
+            best_category, regret_value = suggest_category_choice(rolls, options, current_upper_sum)
             print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
         if validity == "invalid":
             selection = input("That was an invalid input, please enter a valid input (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
@@ -125,7 +131,7 @@ def main():
             if table.table[die_value - 1][1] is None:
                 #selection = rolls[0] - 1
                 #print(f"Your joker selection was {table.table[rolls[0] - 1][0]}")
-                options = table.table[die_value - 1][0]
+                options = [table.table[die_value - 1][0]]
                 scoresheet_choice(options, table, rolls)
             elif table.table[6][1] is None or table.table[7][1] is None or table.table[8][1] is None:
                 options = []
