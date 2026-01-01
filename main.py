@@ -2,13 +2,13 @@ import os
 import json
 import random
 from table import Table
-from calculate_choices import suggest_keep_die, suggest_keep_die_full, build_baseline_ev, suggest_category_choice
+from calculate_choices import suggest_keep_die, suggest_keep_die_full, build_baseline_ev, suggest_category_choice, rank_category_choices
 
 
 YAHTZEE_CHOICES_PATH = "choices.json"
 TEST_ROLL_BOOL = False
 TEST_ROLLS = []
-USER_COMMANDS = set(["suggest", "s"])
+USER_COMMANDS = set(["suggest", "s", "full_suggestion", "fs"])
 UPPER_SECTION_OPTIONS = ["ones", "twos", "threes", "fours", "fives", "sixes"]
 LOWER_SECTION_OPTIONS = ["3_of_a_kind", "4_of_a_kind", "full_house", "small_straight", "large_straight", "yahtzee", "chance"]
 UPPER_SECTION_OPTIONS_SET = set(["ones", "twos", "threes", "fours", "fives", "sixes"])
@@ -29,19 +29,17 @@ def display_table():
                 if value == "None":
                     value = ""
                 filler_value = len("999") - len(value)
-                # print(value, filler_value)
                 filler_val_str_l = " " * (filler_value // 2)
                 filler_val_str_r = " " * ((filler_value + 1) // 2)
                 print(f"| {filler_key_str_l}{item[0]}{filler_key_str_r} | {filler_val_str_l}{value}{filler_val_str_r} |")
-                #print("------------------------")
             print("------------------------")
 
 def roll(prev_rolls, keep_mask):
     new_rolls = prev_rolls[:]
     for i in range(5):
         if not keep_mask[i]:
-            #new_rolls[i] = random.randint(1, 6)
-            new_rolls[i] = 1
+            new_rolls[i] = random.randint(1, 6)
+            #new_rolls[i] = 1
     return new_rolls
 
 def scoresheet_choice(options, table: Table, rolls, current_upper_sum=0):
@@ -55,17 +53,19 @@ def scoresheet_choice(options, table: Table, rolls, current_upper_sum=0):
     validity = table.check_selection(selection)
     while validity == "invalid" or validity == "taken" or (options is not None and table.table[validity][0] not in options):
         if validity == "invalid" and selection in USER_COMMANDS:
-            best_category, regret_value = suggest_category_choice(rolls, options, current_upper_sum)
-            print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
-        if validity == "invalid":
+            if selection == "suggest" or selection == "s":
+                best_category, regret_value = suggest_category_choice(rolls, options, current_upper_sum)
+                print(f"\nSuggested category: {best_category} (regret value: {regret_value:.2f})")
+            elif selection == "full_suggestion" or selection == "fs":
+                print(rank_category_choices(rolls, options, current_upper_sum))
+            selection = input("Now, please enter a valid input (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
+        elif validity == "invalid":
             selection = input("That was an invalid input, please enter a valid input (ex: select '7' or '3_of_a_kind' to choose '3 of a kind'): ")
-            validity = table.check_selection(selection)
         elif validity == "taken":
             selection = input(f"{selection} was already taken, please enter one of these options, {options}: ")
-            validity = table.check_selection(selection)
         else:
             selection = input(f"That is not one of the options, please enter one of these options, {options}: ")
-            validity = table.check_selection(selection)
+        validity = table.check_selection(selection)
     table.add_selection(selection, rolls)
     
 

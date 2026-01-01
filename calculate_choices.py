@@ -37,11 +37,9 @@ def display_table():
                 if value == "None":
                     value = ""
                 filler_value = len("999") - len(value)
-                # print(value, filler_value)
                 filler_val_str_l = " " * (filler_value // 2)
                 filler_val_str_r = " " * ((filler_value + 1) // 2)
                 print(f"| {filler_key_str_l}{item[0]}{filler_key_str_r} | {filler_val_str_l}{value}{filler_val_str_r} |")
-                #print("------------------------")
             print("------------------------")
 
 def roll():
@@ -104,7 +102,6 @@ def suggest_keep_die_full(
                     upper_sum
                 )
 
-                # regret vs baseline
                 cat_ev -= baseline_ev[category]
 
                 best_cat_ev = max(best_cat_ev, cat_ev)
@@ -125,30 +122,25 @@ def suggest_category_choice(rolls, remaining_options, upper_sum):
         counts[r - 1] += 1
     counts = tuple(counts)
 
-    # Load cache
     if os.path.exists(YAHTZEE_EV_FULL_PATH):
         with open(YAHTZEE_EV_FULL_PATH) as f:
             cache = json.load(f)
     else:
         cache = {}
 
-    # Build baseline EVs
     baseline_ev = build_baseline_ev(cache)
 
     best_category = None
     best_value = -1e9
 
     for category in remaining_options:
-        # Calculate actual score for this roll
         actual_score = score_category(counts, category)
 
-        # Add bonus if applicable
         if category in UPPER_SECTION_OPTIONS_SET:
             new_upper_sum = upper_sum + actual_score
             if upper_sum < 63 and new_upper_sum >= 63:
-                actual_score += 35  # Bonus!
+                actual_score += 35
 
-        # Calculate regret (how much better than baseline)
         regret = actual_score - baseline_ev[category]
 
         if regret > best_value:
@@ -156,6 +148,38 @@ def suggest_category_choice(rolls, remaining_options, upper_sum):
             best_category = category
 
     return best_category, best_value
+
+def rank_category_choices(rolls, remaining_options, upper_sum):
+    counts = [0] * 6
+    for r in rolls:
+        counts[r - 1] += 1
+    counts = tuple(counts)
+
+    if os.path.exists(YAHTZEE_EV_FULL_PATH):
+        with open(YAHTZEE_EV_FULL_PATH) as f:
+            cache = json.load(f)
+    else:
+        cache = {}
+
+    baseline_ev = build_baseline_ev(cache)
+
+    category_rankings = []
+
+    for category in remaining_options:
+        actual_score = score_category(counts, category)
+
+        if category in UPPER_SECTION_OPTIONS_SET:
+            new_upper_sum = upper_sum + actual_score
+            if upper_sum < 63 and new_upper_sum >= 63:
+                actual_score += 35
+
+        regret = actual_score - baseline_ev[category]
+
+        category_rankings.append((category, regret))
+
+    category_rankings.sort(key=lambda x: x[1], reverse=True)
+
+    return category_rankings
 
 def suggest_keep_die(rolls, roll_num, remaining_options):
     roll_counts = [0] * 6
@@ -189,7 +213,6 @@ def suggest_keep_die(rolls, roll_num, remaining_options):
         if ev_keep > best_ev:
             best_ev = ev_keep
             best_keep = keep
-    #print(best_keep)
 
     return keep_indices_from_counts(rolls, best_keep)
 
@@ -232,7 +255,6 @@ def prob_category(roll_counts, rolls_left, category):
         prob = 0.0 
 
         for outcome, p_outcome in reroll_outcomes(m):
-            #p_outcome = multinomial_prob(outcome, m)
             next_counts = keep + outcome
 
             prob += p_outcome * prob_category(next_counts, rolls_left - 1, category)
@@ -247,27 +269,18 @@ def prob_category(roll_counts, rolls_left, category):
 def ev_category_full(counts, rolls_left, category, evs, upper_sum=0):
     key = f"{tuple(counts)},{rolls_left},{category},{upper_sum}"
 
-    #if os.path.exists(YAHTZEE_EV_FULL_PATH):
-    #    with open(YAHTZEE_EV_FULL_PATH) as f:
-    #        cache = json.load(f)
-    #else:
-    #    cache = {}
-
     if key in evs:
         return evs[key]
 
     if rolls_left == 0:
         val = score_category(counts, category)
 
-        # Add bonus if this upper category completes the 63-point threshold
         if category in UPPER_SECTION_OPTIONS_SET:
             new_upper_sum = upper_sum + val
             if upper_sum < 63 and new_upper_sum >= 63:
-                val += 35  # Bonus awarded!
+                val += 35
 
         evs[key] = val
-        #with open(YAHTZEE_EV_FULL_PATH, "w") as f:
-        #    json.dump(evs, f)
         return val
 
     best_ev = 0.0
@@ -282,8 +295,6 @@ def ev_category_full(counts, rolls_left, category, evs, upper_sum=0):
         best_ev = max(best_ev, ev)
 
     evs[key] = best_ev
-    #with open(YAHTZEE_EV_PATH, "w") as f:
-    #    json.dump(evs, f)
 
     return best_ev
 
